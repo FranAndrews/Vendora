@@ -1,0 +1,10 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Redirect requests without extension to .php files if they exist
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([^/.]+)$ $1.php [L]
+
+# Optional: Redirect /Vendora to /Vendora/index.php
+RewriteRule ^$ index.php [L]
