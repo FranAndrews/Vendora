@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                class="w-full border border-gray-300 rounded px-3 py-2" />
       </div>
 
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 mt-4 rounded font-semibold">
+      <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 mt-4 rounded font-semibold">
         Save Changes
       </button>
     </form>

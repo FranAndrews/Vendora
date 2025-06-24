@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vendora-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/local.ini
+    ports:
+      - "8081:80"
+    networks:
+      - vendora-network
+    depends_on:
+      - db
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+      - UPLOAD_MAX_FILESIZE=40M
+      - POST_MAX_SIZE=40M
+
+  db:
+    image: mysql:8.0
+    container_name: vendora-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: vendora
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      MYSQL_USER: vendora
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./docker:/docker-entrypoint-initdb.d   
+    ports:
+      - "3306:3306"
+    networks:
+      - vendora-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: vendora-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8080:80"
+    networks:
+      - vendora-network
+    depends_on:
+      - db
+
+networks:
+  vendora-network:
+    driver: bridge
+
+volumes:
+  dbdata: 

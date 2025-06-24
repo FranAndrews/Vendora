@@ -1,93 +1,174 @@
 <?php
+define('SECURE_ACCESS', true);
+require_once '../includes/config.php';
+require_once '../includes/db.php';
 session_start();
-require '../includes/db.php';
 
+include '../includes/header.php';
+?>
 
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
 
-// Handle remove/update POST requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['remove_product_id'])) {
-        $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
-        $stmt->bind_param("ii", $user_id, $_POST['remove_product_id']);
-        $stmt->execute();
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Cart Items -->
+        <div class="lg:col-span-2">
+            <div id="cart-items" class="space-y-4">
+                <!-- Cart items will be loaded here -->
+            </div>
+
+            <div id="empty-cart" class="hidden text-center py-12">
+                <i class="fas fa-shopping-cart text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Your cart is empty</h3>
+                <p class="text-gray-500 mb-6">Looks like you haven't added any items to your cart yet.</p>
+                <a href="<?= BASE_URL ?>buyer/products.php" class="inline-block bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition">
+                    Start Shopping
+                </a>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white border rounded-lg p-6 sticky top-24">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Order Summary</h2>
+                
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="subtotal">R0.00</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Shipping</span>
+                        <span id="shipping">R0.00</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Tax</span>
+                        <span id="tax">R0.00</span>
+                    </div>
+                    <div class="border-t pt-3 flex justify-between font-semibold text-gray-800">
+                        <span>Total</span>
+                        <span id="total">R0.00</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <a href="<?= BASE_URL ?>buyer/checkout.php" class="w-full bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition text-center block">
+                            Proceed to Checkout
+                        </a>
+                    <?php else: ?>
+                        <div class="space-y-4">
+                            <a href="<?= BASE_URL ?>login.php" class="w-full bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition text-center block">
+                                Sign in to Checkout
+                            </a>
+                            <p class="text-center text-sm text-gray-600">
+                                Don't have an account? 
+                                <a href="<?= BASE_URL ?>register.php" class="text-orange-600 hover:text-orange-700">Register here</a>
+                            </p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a href="<?= BASE_URL ?>buyer/products.php" class="text-orange-600 hover:text-orange-700 text-sm">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadCart() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartItems = document.getElementById('cart-items');
+    const emptyCart = document.getElementById('empty-cart');
+    
+    if (cart.length === 0) {
+        cartItems.classList.add('hidden');
+        emptyCart.classList.remove('hidden');
+        updateSummary(0, 0, 0);
+        return;
     }
-    if (isset($_POST['update_product_id']) && isset($_POST['quantity'])) {
-        $qty = max(1, intval($_POST['quantity']));
-        $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?");
-        $stmt->bind_param("iii", $qty, $user_id, $_POST['update_product_id']);
-        $stmt->execute();
-    }
-    if (isset($_POST['checkout'])) {
-        // Place orders for all cart items
-        $cart_items = $conn->prepare("SELECT product_id, quantity FROM cart WHERE user_id = ?");
-        $cart_items->bind_param("i", $user_id);
-        $cart_items->execute();
-        $result = $cart_items->get_result();
 
-        $place_order = $conn->prepare("INSERT INTO orders (user_id, product_id, quantity, status) VALUES (?, ?, ?, 'pending')");
-        while ($row = $result->fetch_assoc()) {
-            $place_order->bind_param("iii", $user_id, $row['product_id'], $row['quantity']);
-            $place_order->execute();
+    cartItems.classList.remove('hidden');
+    emptyCart.classList.add('hidden');
+    
+    cartItems.innerHTML = cart.map(item => `
+        <div class="bg-white border rounded-lg p-4 flex items-center gap-4" data-id="${item.id}">
+            <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover rounded">
+            <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">${item.name}</h3>
+                <p class="text-orange-600 font-bold">R${item.price.toFixed(2)}</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="updateItemQuantity(${item.id}, -1)" class="px-2 py-1 text-gray-600 hover:text-orange-600">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span class="w-8 text-center">${item.quantity}</span>
+                <button onclick="updateItemQuantity(${item.id}, 1)" class="px-2 py-1 text-gray-600 hover:text-orange-600">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <button onclick="removeItem(${item.id})" class="text-gray-400 hover:text-red-600">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+
+    updateSummary(cart);
+}
+
+function updateItemQuantity(id, change) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const index = cart.findIndex(item => item.id === id);
+    
+    if (index > -1) {
+        cart[index].quantity += change;
+        
+        if (cart[index].quantity <= 0) {
+            cart.splice(index, 1);
         }
-
-        // Clear cart
-        $clear_cart = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
-        $clear_cart->bind_param("i", $user_id);
-        $clear_cart->execute();
-
-        header("Location: orders.php?checkout=success");
-        exit();
+        
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadCart();
+        updateCartCount();
     }
 }
 
-// Fetch cart items with product info
-$stmt = $conn->prepare("SELECT c.product_id, c.quantity, p.name, p.price, p.image_path FROM cart c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$cart_items = $result->fetch_all(MYSQLI_ASSOC);
-?>
+function removeItem(id) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart = cart.filter(item => item.id !== id);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    loadCart();
+    updateCartCount();
+}
 
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Your Cart | Vendora</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 p-6 min-h-screen">
-  <h1 class="text-2xl font-bold mb-4">Your Cart</h1>
+function updateSummary(cart) {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = subtotal > 0 ? 50 : 0; // R50 shipping fee
+    const tax = subtotal * 0.15; // 15% tax
+    
+    document.getElementById('subtotal').textContent = `R${subtotal.toFixed(2)}`;
+    document.getElementById('shipping').textContent = `R${shipping.toFixed(2)}`;
+    document.getElementById('tax').textContent = `R${tax.toFixed(2)}`;
+    document.getElementById('total').textContent = `R${(subtotal + shipping + tax).toFixed(2)}`;
+}
 
-  <?php if (empty($cart_items)): ?>
-    <p class="text-gray-600">Your cart is empty.</p>
-  <?php else: ?>
-    <form method="POST" class="space-y-4">
-      <?php foreach ($cart_items as $item): ?>
-        <div class="bg-white border rounded p-4 shadow flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <?php if ($item['image_path']): ?>
-              <img src="<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="w-16 h-16 object-cover rounded" />
-            <?php else: ?>
-              <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500">No Image</div>
-            <?php endif; ?>
-            <div>
-              <p class="font-semibold text-gray-800"><?= htmlspecialchars($item['name']) ?></p>
-              <p class="text-sm text-gray-600">$<?= number_format($item['price'], 2) ?></p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="hidden" name="update_product_id" value="<?= $item['product_id'] ?>" />
-            <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="w-16 border rounded px-2 py-1" />
-            <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded">Update</button>
-          </div>
-          <div>
-            <button type="submit" name="remove_product_id" value="<?= $item['product_id'] ?>" class="text-red-600 hover:underline text-sm">Remove</button>
-          </div>
-        </div>
-      <?php endforeach; ?>
+function proceedToCheckout() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+    }
+    
+    // Redirect to checkout page
+    window.location.href = '<?= BASE_URL ?>buyer/checkout.php';
+}
 
-      <button type="submit" name="checkout" class="mt-6 bg-green-600 text-white px-6 py-2 rounded font-semibold">Checkout</button>
-    </form>
-  <?php endif; ?>
+// Load cart when page loads
+document.addEventListener('DOMContentLoaded', loadCart);
+</script>
 
-</body>
-</html>
+<?php include '../includes/footer.php'; ?>
