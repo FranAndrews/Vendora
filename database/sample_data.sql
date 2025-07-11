@@ -1,10 +1,10 @@
 -- Create sample seller
-INSERT INTO users (name, email, password, role, status, created_at) 
-SELECT 'Tech Store', 'tech@vendora.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'seller', 'active', NOW()
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'tech@vendora.com');
+INSERT INTO users (name, email, password, role, status, created_at)
+VALUES ('Demo User', 'demo@example.com', '$2y$10$demoHashedPassword', 'seller', 'active', NOW())
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'demo@example.com');
 
 -- Get seller ID
-SET @seller_id = (SELECT id FROM users WHERE email = 'tech@vendora.com' LIMIT 1);
+SET @seller_id = (SELECT id FROM users WHERE email = 'demo@example.com' LIMIT 1);
 
 -- Add categories
 INSERT INTO categories (name, description) VALUES
@@ -34,7 +34,7 @@ INSERT INTO products (seller_id, name, description, price, stock, image_path, st
 (@seller_id, 'Nintendo Switch OLED', 'White, 64GB', 8999.99, 15, 'https://assets.nintendo.com/image/upload/f_auto/q_auto/dpr_2.0/c_scale,w_400/ncom/en_US/switch/site-design-update/hardware/switch/nintendo-switch-oled-model-white-set/gallery/image01', 'active'),
 (@seller_id, 'Samsung Galaxy S23', '256GB, Phantom Black', 22499.99, 18, 'https://images.samsung.com/is/image/samsung/p6pim/za/2308/gallery/za-galaxy-s23-ultra-s918-sm-s918bzgaxfa-thumb-537686803', 'active'),
 (@seller_id, 'Logitech MX Master 3S', 'Wireless mouse, Darkfield tracking', 2499.99, 30, 'https://resource.logitech.com/content/dam/logitech/en/products/mice/mx-master-3s/gallery/mx-master-3s-mouse-top-view-graphite.png', 'active')
-ON DUPLICATE KEY UPDATE 
+ON DUPLICATE KEY UPDATE
     stock = VALUES(stock),
     price = VALUES(price),
     status = VALUES(status);

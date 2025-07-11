@@ -1,4 +1,5 @@
 <?php
+// WARNING: Do NOT commit this file to public repositories. Contains sensitive credentials.
 /**
  * Configuration File
  * 

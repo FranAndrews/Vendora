@@ -166,5 +166,11 @@ The application includes a comprehensive database schema with:
 - CSRF token validation
 - Comprehensive error handling without information disclosure
 
+## Setup
+
+1. Copy `includes/config.example.php` to `includes/config.php`.
+2. Fill in your own database credentials and settings in `config.php`.
+3. The real `config.php`, `logs/`, and `uploads/` are excluded from version control for security.
+
 
 

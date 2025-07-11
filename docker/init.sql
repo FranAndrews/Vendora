@@ -104,12 +104,12 @@ CREATE TABLE IF NOT EXISTS product_categories (
 ) ENGINE=InnoDB;
 
 -- Create admin user (password: password)
-INSERT INTO users (name, email, password, role) VALUES 
-('Admin', 'admin@vendora.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin')
+INSERT INTO users (name, email, password, role) VALUES
+('Admin', 'admin@example.com', '$2y$10$demoHashedPassword', 'admin')
 ON DUPLICATE KEY UPDATE id=id;
 
 -- Insert sample categories
-INSERT INTO categories (name, description) VALUES 
+INSERT INTO categories (name, description) VALUES
 ('Electronics', 'Electronic devices and gadgets'),
 ('Clothing', 'Fashion and apparel'),
 ('Home & Kitchen', 'Home improvement and kitchen items'),
