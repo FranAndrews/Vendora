@@ -2,7 +2,7 @@
 
 Vendora is a secure, modern e-commerce platform that connects buyers and sellers, built with PHP, MySQL, and Docker.
 
-## 🚀 Features
+## Features
 
 ### Buyer Features
 - Browse products with detailed views and search functionality
@@ -25,7 +25,7 @@ Vendora is a secure, modern e-commerce platform that connects buyers and sellers
 - Content moderation tools
 - System configuration management
 
-## 🛡️ Security Features
+## Security Features
 
 - **SQL Injection Protection**: Prepared statements throughout
 - **XSS Protection**: Input sanitization and output escaping
@@ -36,7 +36,7 @@ Vendora is a secure, modern e-commerce platform that connects buyers and sellers
 - **Rate Limiting**: Login attempt protection
 - **Security Headers**: Comprehensive HTTP security headers
 
-## 🏗️ Technical Architecture
+## Technical Architecture
 
 ### Backend Stack
 - **PHP 8.2** with Apache
@@ -81,7 +81,7 @@ Vendora/
 └── README.md          # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker and Docker Compose
@@ -148,7 +148,7 @@ requireAuth();
 requireRole('admin');
 ```
 
-## 📊 Database Schema
+## Database Schema
 
 The application includes a comprehensive database schema with:
 - **Users**: Authentication and role management
@@ -157,7 +157,7 @@ The application includes a comprehensive database schema with:
 - **Reviews**: Product reviews and ratings
 - **Categories**: Product categorization
 
-## 🔒 Security Best Practices
+## Security Best Practices
 
 - All database queries use prepared statements
 - Input validation and sanitization on all forms
