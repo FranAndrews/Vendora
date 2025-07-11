@@ -21,6 +21,11 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
+<!-- DEMO WARNING BANNER -->
+<div style="background: #ffcc00; color: #222; text-align: center; padding: 12px; font-weight: bold; font-size: 1.1em; border-bottom: 2px solid #e6b800; z-index:9999;">
+    ⚠️ <b>DEMO SITE:</b> This website is for demonstration purposes only. <u>Do NOT provide real personal, financial, or sensitive information.</u> Please use fake data if you want to explore the features. No real transactions or accounts will be created.
+</div>
+
 <!-- Header Nav -->
 <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
